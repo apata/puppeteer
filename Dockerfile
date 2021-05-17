@@ -1,5 +1,7 @@
 FROM node:14-slim
 
+ENV PORT=9684
+
 # Install latest chrome dev package and fonts to support major charsets (Chinese, Japanese, Arabic, Hebrew, Thai and a few others)
 # Note: this installs Chrome dependencies.
 RUN apt-get update \
@@ -11,7 +13,7 @@ RUN apt-get update \
       --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-COPY package-lock.json ./
+COPY package-lock.json entrypoint.js ./
 
 # Install puppeteer so it's available in the container.
 RUN npm i puppeteer \
@@ -21,7 +23,9 @@ RUN npm i puppeteer \
     && mkdir -p /home/pptruser/Downloads \
     && chown -R pptruser:pptruser /home/pptruser \
     && chown -R pptruser:pptruser /node_modules \
-    && chown -R pptruser:pptruser /package-lock.json
+    && chown pptruser:pptruser /package-lock.json /entrypoint.js
 
 # Run everything after as non-privileged user.
 USER pptruser
+
+ENTRYPOINT ["node", "/entrypoint.js"]
